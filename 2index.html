@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wingo Premium V8 - Telegram Fixed</title>
+    <style>
+        /* --- DARK HACKER THEME (MATRIX STYLE) --- */
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --neon-green: #00ff00;
+            --neon-red: #ff0000;
+            --neon-gold: #ffd700;
+            --panel-bg: #111111;
+            --border: #333333;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace; /* Hacker Font */
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            background: #050505;
+            border-bottom: 2px solid var(--neon-green);
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        .status-dot {
+            height: 10px; width: 10px;
+            background-color: var(--neon-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--neon-green);
+            margin-right: 8px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0.3; } }
+
+        .container {
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 100px; /* Space for telegram button */
+        }
+
+        /* --- TIMER & PERIOD PANEL --- */
+        .dashboard-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .label { font-size: 12px; color: #888; }
+        .period-id { font-size: 16px; color: #00bfff; font-weight: bold; letter-spacing: 1px; }
+        
+        .timer-box {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--neon-gold);
+            font-family: monospace;
+            text-align: right;
+        }
+
+        /* --- PREDICTION SIGNAL BOX --- */
+        .signal-box {
+            background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
+            border: 2px solid var(--neon-green);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .signal-header {
+            position: absolute; top: 10px; left: 0; right: 0;
+            font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        .result-big {
+            font-size: 48px;
+            font-weight: 900;
+            margin: 15px 0;
+            text-transform: uppercase;
+            color: var(--neon-gold);
+            text-shadow: 0 0 15px var(--neon-gold);
+        }
+
+        .result-small {
+            font-size: 48px;
+            font-weight: 900;
+            margin: 15px 0;
+            text-transform: uppercase;
+            color: #00bfff;
+            text-shadow: 0 0 15px #00bfff;
+        }
+
+        /* --- HISTORY TABLE --- */
+        .history-section {
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .history-header {
+            display: flex; justify-content: space-between;
+            color: #666; font-size: 12px; margin-bottom: 10px;
+            padding: 0 5px;
+        }
+
+        .reset-btn {
+            background: none; border: 1px solid #444; color: #ff4444;
+            padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; color: #888; padding: 8px; border-bottom: 1px solid #333; }
+        td { padding: 8px; border-bottom: 1px solid #222; color: #ddd; vertical-align: middle; }
+        
+        .check-btn {
+            padding: 5px 10px; border: none; border-radius: 4px; 
+            font-weight: bold; font-size: 11px; cursor: pointer; margin-right: 5px;
+        }
+        .btn-b { background: var(--neon-gold); color: black; }
+        .btn-s { background: #00bfff; color: black; }
+        
+        .win-tag { color: var(--neon-green); font-weight: bold; }
+        .loss-tag { color: var(--neon-red); font-weight: bold; }
+
+        /* --- TELEGRAM BUTTON (FIXED) --- */
+        .telegram-float {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: #24A1DE; /* Telegram Blue */
+            color: white;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-family: sans-serif;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 20px rgba(36, 161, 222, 0.6);
+            border: 2px solid white;
+            z-index: 999;
+            transition: transform 0.2s;
+        }
+        .telegram-float:active { transform: translateX(-50%) scale(0.95); }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span class="status-dot"></span> WINGO V8 PREMIUM
+    </div>
+
+    <div class="container">
+        
+        <!-- Timer Section -->
+        <div class="dashboard-panel">
+            <div class="info-row">
+                <div>
+                    <div class="label">ACTIVE PERIOD</div>
+                    <div class="period-id" id="periodId">Loading...</div>
+                </div>
+                <div>
+                    <div class="label" style="text-align:right;">SERVER TIME</div>
+                    <div id="clock" style="font-size:14px; text-align:right;">00:00:00</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top:15px;">
+                <div class="label" style="margin-bottom:5px;">TIME REMAINING</div>
+                <div class="timer-box" id="countdown">00</div>
+            </div>
+        </div>
+
+        <!-- Prediction Box -->
+        <div class="signal-box">
+            <div class="signal-header">System Prediction</div>
+            
+            <div id="loader" style="display:none; color:var(--neon-green); font-size:14px; padding:20px;">
+                [ ANALYZING DATA... ]
+            </div>
+
+            <div id="prediction">
+                <div class="result-big" id="resultType">WAIT</div>
+                <div id="confidence" style="font-size:12px; color:#888;">Probability: 95%</div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="history-section">
+            <div class="history-header">
+                HISTORY & CHECK
+                <button class="reset-btn" onclick="clearHistory()">RESET</button>
+            </div>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>AI</th>
+                        <th>Check Result</th>
+                    </tr>
+                </thead>
+                <tbody id="historyList">
+                    <!-- Javascript fills this -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- TELEGRAM BUTTON -->
+    <a href="https://t.me/airdrop_daily_combo_24" class="telegram-float" target="_blank">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.91 1.2-5.4 3.56-.51.35-1 .52-1.42.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.37-.49 1.02-.74 4-1.74 6.67-2.89 8.01-3.44 3.81-1.56 4.61-1.88 5.12-1.89.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.13-.03.22z"/></svg>
+        JOIN TELEGRAM CHANNEL
+    </a>
+
+    <script>
+        // --- GLOBAL VARIABLES ---
+        let currentPeriod = "";
+        let currentPrediction = "WAIT"; 
+        let historyDB = [];
+
+        // --- 1. LOCAL STORAGE HANDLING ---
+        function loadHistory() {
+            const stored = localStorage.getItem('wingo_v8_history');
+            if(stored) {
+                historyDB = JSON.parse(stored);
+                renderTable();
+            }
+        }
+        
+        function saveHistory() {
+            localStorage.setItem('wingo_v8_history', JSON.stringify(historyDB));
+        }
+
+        function clearHistory() {
+            if(confirm("Delete all history?")) {
+                historyDB = [];
+                localStorage.removeItem('wingo_v8_history');
+                renderTable();
+            }
+        }
+
+        // --- 2. MAIN LOGIC (TIMER & PERIOD) ---
+        function updateGame() {
+            const now = new Date();
+            // Convert to Indian Standard Time (IST)
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const istDate = new Date(utc + (3600000 * 5.5));
+
+            // Clock
+            const h = String(istDate.getHours()).padStart(2, '0');
+            const m = String(istDate.getMinutes()).padStart(2, '0');
+            const s = String(istDate.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+
+            // Countdown
+            const seconds = istDate.getSeconds();
+            const remaining = 60 - seconds;
+            const cdEl = document.getElementById('countdown');
+            cdEl.innerText = remaining < 10 ? `0${remaining}` : remaining;
+
+            // Colors for timer
+            if(remaining <= 5 || remaining === 60) {
+                cdEl.style.color = "#ff0000";
+            } else {
+                cdEl.style.color = "#ffd700";
+            }
+
+            // Period ID Calculation (1 Min Wingo standard)
+            const yyyy = istDate.getFullYear();
+            const mm = String(istDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(istDate.getDate()).padStart(2, '0');
+            const totalMinutes = (istDate.getHours() * 60) + istDate.getMinutes();
+            const periodNum = 10001 + totalMinutes;
+            const newPeriodId = `${yyyy}${mm}${dd}1000${periodNum}`;
+
+            // --- CHECK FOR NEW PERIOD ---
+            if(newPeriodId !== currentPeriod) {
+                
+                // If it's not the first load, save previous round
+                if(currentPeriod !== "") {
+                    addToHistory(currentPeriod, currentPrediction);
+                }
+
+                currentPeriod = newPeriodId;
+                document.getElementById('periodId').innerText = currentPeriod;
+
+                // GENERATE NEW PREDICTION IMMEDIATELY
+                generatePrediction();
+            }
+        }
+
+        // --- 3. PREDICTION ENGINE ---
+        function generatePrediction() {
+            // UI Effect
+            document.getElementById('prediction').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            setTimeout(() => {
+                // Logic: Random 50/50
+                const isBig = Math.random() > 0.5;
+                currentPrediction = isBig ? "BIG" : "SMALL";
+
+                // Update Display
+                const resType = document.getElementById('resultType');
+                resType.innerText = currentPrediction;
+                
+                if(currentPrediction === "BIG") {
+                    resType.className = "result-big";
+                } else {
+                    resType.className = "result-small";
+                }
+
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('prediction').style.display = 'block';
+
+            }, 1000); // 1 second delay
+        }
+
+        // --- 4. HISTORY & MANUAL CHECK ---
+        function addToHistory(period, aiVal) {
+            // Add to top of list
+            historyDB.unshift({
+                period: period,
+                ai: aiVal,
+                status: 'WAIT' // Waiting for user verification
+            });
+
+            // Limit to 15 items
+            if(historyDB.length > 15) historyDB.pop();
+
+            saveHistory();
+            renderTable();
+        }
+
+        function verifyResult(index, realResult) {
+            const item = historyDB[index];
+            
+            // Compare AI vs Real
+            if(item.ai === realResult) {
+                item.status = 'WIN';
+            } else {
+                item.status = 'LOSS';
+            }
+
+            saveHistory();
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('historyList');
+            tbody.innerHTML = "";
+
+            historyDB.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const shortId = item.period.slice(-4);
+                
+                let checkHtml = "";
+                let statusClass = "";
+
+                if(item.status === 'WAIT') {
+                    // Show Input Buttons
+                    checkHtml = `
+                        <button class="check-btn btn-s" onclick="verifyResult(${index}, 'SMALL')">S</button>
+                        <button class="check-btn btn-b" onclick="verifyResult(${index}, 'BIG')">B</button>
+                    `;
+                } else {
+                    // Show Win/Loss
+                    if(item.status === 'WIN') checkHtml = `<span class="win-tag">✔ WIN</span>`;
+                    else checkHtml = `<span class="loss-tag">✘ LOSS</span>`;
+                }
+
+                // AI Color
+                const aiStyle = item.ai === 'BIG' ? 'color:#ffd700' : 'color:#00bfff';
+
+                tr.innerHTML = `
+                    <td style="font-family:monospace;">${shortId}</td>
+                    <td style="font-weight:bold; ${aiStyle}">${item.ai}</td>
+                    <td>${checkHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- STARTUP ---
+        loadHistory();
+        setInterval(updateGame, 1000);
+        updateGame();
+
+    </script>
+</body>
+</html>
